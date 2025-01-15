@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Interface</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1><img src="./assets/logo_transparent.png" alt="Blockchain Logo"></h1>
+    </header>
+
+    <div class="container">
+        <!-- Dashboard Section -->
+        <div class="section" id="dashboard">
+            <h2>Dashboard</h2>
+            <p>Chain Status: <span id="chain-status">Loading...</span></p>
+            <p>Pending Transactions: <span id="pending-transactions">Loading...</span></p>
+        </div>
+
+        <!-- Create Transaction Section -->
+        <div class="section" id="create-transaction">
+            <h2>Create Transaction</h2>
+            <label for="amount">Amount:</label>
+            <input type="number" id="amount" placeholder="Enter amount" />
+
+            <label for="sender">Sender:</label>
+            <input type="text" id="sender" placeholder="Sender's address" />
+
+            <label for="recipient">Recipient:</label>
+            <input type="text" id="recipient" placeholder="Recipient's address" />
+
+            <button onclick="createTransaction()">Create Transaction</button>
+            <p id="transaction-status"></p>
+        </div>
+
+        <!-- Mine Block Section -->
+        <div class="section" id="mine-block">
+            <h2>Mine Block</h2>
+            <button onclick="mineBlock()">Mine Block</button>
+            <p id="mine-status"></p>
+        </div>
+
+        <!-- Blockchain Viewer -->
+        <div class="section" id="blockchain-viewer">
+            <h2>Blockchain</h2>
+            <div id="blockchain"></div>
+        </div>
+    </div>
+
+    <script src="vpi.js"></script>
+    <script>
+const blockchainUrl = "http://localhost:3000";
+
+// Update the dashboard with blockchain stats
+async function updateDashboard() {
+    try {
+        const response = await fetch(`${blockchainUrl}/blockchain`);
+        const data = await response.json();
+
+        document.getElementById("chain-status").innerText = `Blocks: ${data.chain.length}`;
+        document.getElementById("pending-transactions").innerText = `${data.pendingTransactions.length} transactions`;
+    } catch (error) {
+        console.error("Error fetching blockchain data:", error);
+    }
+}
+
+// Create a new transaction
+async function createTransaction() {
+    const amount = document.getElementById("amount").value;
+    const sender = document.getElementById("sender").value;
+    const recipient = document.getElementById("recipient").value;
+
+    if (!amount || !sender || !recipient) {
+        document.getElementById("transaction-status").innerText = "Please fill in all fields.";
+        return;
+    }
+
+    try {
+        const response = await fetch(`${blockchainUrl}/transaction`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ amount, sender, recipient }),
+        });
+
+        const data = await response.json();
+        document.getElementById("transaction-status").innerText = data.note || "Transaction created successfully!";
+        updateDashboard();
+    } catch (error) {
+        console.error("Error creating transaction:", error);
+        document.getElementById("transaction-status").innerText = "Failed to create transaction.";
+    }
+}
+
+// Mine a new block
+async function mineBlock() {
+    try {
+        const response = await fetch(`${blockchainUrl}/mine`);
+        const data = await response.json();
+
+        document.getElementById("mine-status").innerText = data.note || "Block mined successfully!";
+        updateDashboard();
+    } catch (error) {
+        console.error("Error mining block:", error);
+        document.getElementById("mine-status").innerText = "Failed to mine block.";
+    }
+}
+
+// Initialize
+updateDashboard();
+
+    </script>
+</body>
+</html>
