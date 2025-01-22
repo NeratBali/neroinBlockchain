@@ -28,7 +28,8 @@ app.post("/transaction", (req, res) => {
 
     const blockIndex = neroin.createNewTransaction(amount, sender, recipient);
     res.json({
-        note: `Transaction will be added in block ${blockIndex}.`,
+        note: `Transaction will be added in block `,
+        blockIndex:blockIndex,
     });
 });
 
@@ -48,7 +49,8 @@ app.get("/mine", (req, res) => {
     neroin.createNewTransaction(12.5, "00", nodeAddress);
 
     const newBlock = neroin.createNewBlock(nonce, previousBlockHash, blockHash);
-
+    const sensitiveKeys=['nonce', 'hash', 'previousBlockHash'];
+    sensitiveKeys.forEach(key=>delete newBlock[key]);
     res.json({
         note: "New block mined successfully.",
         block: newBlock,
